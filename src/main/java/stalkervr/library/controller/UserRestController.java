@@ -40,7 +40,6 @@ public class UserRestController {
     public UserRestController(UserLibraryService userLibraryService, IssuanceLogService issuanceLogService, PublicationService publicationService) {
         this.userLibraryService = userLibraryService;
         this.issuanceLogService = issuanceLogService;
-
         this.publicationService = publicationService;
     }
 
@@ -89,6 +88,25 @@ public class UserRestController {
     }
 
     /**
+     * http://localhost:8085/api/users/issuanceall-page/?page=0&userId=1
+     * http://localhost:8085/api/users/issuanceall-page/?userId=1
+     */
+//    @RequestMapping(value = "issuanceall-page/", method = RequestMethod.GET,
+//            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+//    public ResponseEntity<Page<IssuanceLog>> getAllIssuanceLogByUserIdPage(
+//            @RequestParam Optional<Integer> page, @RequestParam Optional<Long> userId) {
+//
+//        if(userId.isEmpty()){
+//            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+//        }
+//
+//        return new ResponseEntity<>(
+//                issuanceLogService.getAllIssuanceByUserId(page.orElse(0),userId.get()),
+//                HttpStatus.OK
+//        );
+//    }
+
+    /**
      * http://localhost:8085/api/users/issuanceall/?page=0&userId=1
      * http://localhost:8085/api/users/issuanceall/?userId=1
      */
@@ -100,14 +118,11 @@ public class UserRestController {
         if(userId.isEmpty()){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        List<IssuanceLog> issuanceLogList = issuanceLogService.getAllIssuanceByUserId(userId.get());
 
-        Page<IssuanceLog> issuanceLogPage = new PageImpl<>(issuanceLogList,
-                PageRequest.of(
-                        page.orElse(0),5
-                ), userId.orElse(1L)
+        return new ResponseEntity<>(
+                issuanceLogService.getAllIssuanceByUserId(page.orElse(0),userId.get()),
+                HttpStatus.OK
         );
-        return new ResponseEntity<>(issuanceLogPage, HttpStatus.OK);
     }
 
     /**

@@ -13,7 +13,9 @@ public interface PublicationService {
 
     Optional<Publication> getPublicationById(Long id);
 
-    Page<Publication> searchByText(String textForSearch, PageRequest pageRequest);
+    //Page<Publication> searchByText(String textForSearch, PageRequest pageRequest);
+
+    Page<Publication> searchByText(Integer page, String textForSearch, String sortBy);
 
     Page<Publication> getAllPublicationSorted(PageRequest pageRequest);
 }

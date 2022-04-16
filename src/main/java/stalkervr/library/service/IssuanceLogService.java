@@ -11,4 +11,7 @@ public interface IssuanceLogService {
     Page<IssuanceLog> getAllIssuance(PageRequest pageRequest);
 
     List<IssuanceLog> getAllIssuanceByUserId(Long userId);
+
+    Page<IssuanceLog> getAllIssuanceByUserId(Integer page, Long userId);
+
 }

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -63,10 +64,9 @@ public class PublicationServiceImpl implements PublicationService{
         return publicationRepository.findAll(pageRequest);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public Page<Publication> searchByText(String textForSearch, PageRequest pageRequest)  {
-
+    @SuppressWarnings("unchecked")
+    public Page<Publication> searchByText(Integer page, String textForSearch, String sortBy) {
         FullTextEntityManager fullTextEntityManager
                 = Search.getFullTextEntityManager(entityManager);
 
@@ -77,20 +77,25 @@ public class PublicationServiceImpl implements PublicationService{
         }
 
         QueryBuilder queryBuilder = fullTextEntityManager
-                    .getSearchFactory()
-                    .buildQueryBuilder()
-                    .forEntity(Publication.class)
-                    .get();
+                .getSearchFactory()
+                .buildQueryBuilder()
+                .forEntity(Publication.class)
+                .get();
 
-        org.apache.lucene.search.Query query = queryBuilder
-                .keyword()
-                .onFields("name", "description")
-                .matching(textForSearch)
-                .createQuery();
+        org.apache.lucene.search.Query   query = queryBuilder
+                    .keyword()
+                    .onFields("name", "description")
+                    .matching(textForSearch)
+                    .createQuery();
+
 
         org.hibernate.search.jpa.FullTextQuery jpaQuery
                 = fullTextEntityManager.createFullTextQuery(query, Publication.class);
 
-        return new PageImpl<Publication>(jpaQuery.getResultList()) ;
+        return new PageImpl<Publication>(
+                jpaQuery.getResultList(),
+                PageRequest.of(page,5, Sort.Direction.ASC, sortBy),
+                0
+        );
     }
 }

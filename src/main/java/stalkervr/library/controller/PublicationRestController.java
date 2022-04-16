@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import org.springframework.http.HttpHeaders;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import stalkervr.library.entity.Publication;
 import stalkervr.library.service.PublicationService;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -45,6 +43,7 @@ public class PublicationRestController {
      *     "bookCount": 5
      * }
      */
+    @SuppressWarnings("deprecation")
     @RequestMapping(value = "new/", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<Publication> addNewPublication(@RequestBody @Validated Optional<Publication> publication) {
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -59,6 +58,7 @@ public class PublicationRestController {
     /**
      * http://localhost:8085/api/publications/?publicationId=1
      */
+    @SuppressWarnings("deprecation")
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<Publication> getPublication(@RequestParam Optional<Long>  publicationId) {
 
@@ -77,6 +77,7 @@ public class PublicationRestController {
      * http://localhost:8085/api/publications/all/?sortBy=name
      * http://localhost:8085/api/publications/all/?page=0&sortBy=name
      */
+    @SuppressWarnings("deprecation")
     @RequestMapping(value = "all/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<Page<Publication>> getPublications(@RequestParam Optional<Integer> page, @RequestParam Optional<String> sortBy){
 
@@ -91,45 +92,21 @@ public class PublicationRestController {
 
     /**
      * http://localhost:8085/api/publications/all/search/?searchText=Anna Karenina
+     * http://localhost:8085/api/publications/all/search/?searchText=Портрет Дориана Грея
      */
+    @SuppressWarnings("deprecation")
     @RequestMapping(value = "all/search", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<Page<Publication>> searchByText (
+    public ResponseEntity<Page<Publication>> searchByTextNew (
             @RequestParam Optional<Integer> page, @RequestParam Optional<String> searchText,
             @RequestParam Optional<String> sortBy){
 
-        if(searchText.isEmpty()){
+        if(searchText.isEmpty() || searchText.get().equals("")){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        Page<Publication> searchListResult =
-                publicationService.searchByText(searchText.get(),
-                        PageRequest.of(page.orElse(0), 5,
-                        Sort.Direction.ASC, sortBy.orElse("id"))
-                );
-        return new ResponseEntity<>(searchListResult, HttpStatus.OK);
+
+        return new ResponseEntity<>(
+                publicationService.searchByText(page.orElse(0), searchText.orElse(""), sortBy.orElse("id")),
+                HttpStatus.OK
+        );
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
