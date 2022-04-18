@@ -1,13 +1,12 @@
 package stalkervr.library.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
@@ -17,7 +16,10 @@ import javax.persistence.Id;
 public class UserLibrary {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @Column(nullable = false, unique = true)
     private Long id;
+
+    public UserLibrary(Long id) {
+        this.id = id;
+    }
 }

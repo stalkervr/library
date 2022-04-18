@@ -5,9 +5,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import stalkervr.library.entity.Publication;
-import stalkervr.library.entity.UserLibrary;
+import stalkervr.library.exception.BadRequestException;
 import stalkervr.library.service.PublicationService;
-import stalkervr.library.service.UserLibraryService;
 
 import javax.annotation.PostConstruct;
 
@@ -15,24 +14,18 @@ import javax.annotation.PostConstruct;
 public class LibraryApplication {
 
 	private final PublicationService publicationService;
-	private final UserLibraryService userLibraryService;
 
 	@Autowired
-	public LibraryApplication(PublicationService publicationService, UserLibraryService userLibraryService) {
+	public LibraryApplication(PublicationService publicationService) {
 		this.publicationService = publicationService;
-		this.userLibraryService = userLibraryService;
 	}
 
 	@PostConstruct
-	public void fillTestDataBase(){
-
-		UserLibrary userLibrary = new UserLibrary();
-		UserLibrary userLibrary1 = new UserLibrary();
-
+	public void fillTestDataBase() throws BadRequestException {
 
 		Publication publication1 = new Publication("Портрет Дориана Грея", "\"Портрет Дориана Грея\" - самое знаменитое произведение Оскара Уайльда, единственный его роман, вызвавший в свое время шквал негативных оценок и тем не менее имевший невероятный успех.\n" +
 				"Главный герой романа, красавец Дориан, - фигура двойственная, неоднозначная. Тонкий эстет и романтик становится безжалостным преступником. Попытка сохранить свою необычайную красоту и молодость оборачивается провалом. Вместо героя стареет его портрет - но это не может продолжаться вечно, и смерть Дориана расставляет все по своим местам.\n" +
-				"Подробнее: https://www.labirint.ru/books/450144/", 5);
+				"Подробнее: https://www.labirint.ru/books/450144/", 1);
 		Publication publication2 = new Publication("Повелитель мух", "\"Повелитель мух\". Странная, страшная и бесконечно притягательная книга. История благовоспитанных мальчиков, внезапно оказавшихся на необитаемом острове. Философская притча о том, что может произойти с людьми, забывшими о любви и милосердии. Гротескная антиутопия, роман-предупреждение и, конечно, напоминание о хрупкости мира, в котором живем мы все.Роман Уильяма Голдинга \"Повелитель мух\" (1954) – антиутопия с символическим подтекстом, исследующая особенности взаимоотношений детей на необитаемом острове, куда они попали в военное время.\n" +
 				"Подробнее: https://www.labirint.ru/books/420218/", 3);
 		Publication publication3 = new Publication("Загадка Ситтафорда", "Кому понадобилась смерть не имеющего врагов отставного военного, безобидного любителя газетных конкурсов и головоломок? Как получилось, что это убийство было предсказано во время спиритического сеанса в деревушке, отрезанной от мира небывалым снегопадом? Кто все-таки сможет разгадать сложнейшую «Загадку Ситтафорда»?\n" +
@@ -68,19 +61,9 @@ public class LibraryApplication {
 		publicationService.addPublication(publication9);
 		publicationService.addPublication(publication10);
 
-		userLibraryService.addUser(userLibrary);
-		userLibraryService.addUser(userLibrary1);
-
-		userLibraryService.takeBook(userLibrary, publication1);
-		userLibraryService.takeBook(userLibrary1, publication5);
-		userLibraryService.takeBook(userLibrary, publication5);
-
-		userLibraryService.returnBook(userLibrary, publication5);
-
 	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(LibraryApplication.class, args);
 	}
-
 }

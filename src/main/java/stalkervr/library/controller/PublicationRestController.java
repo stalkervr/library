@@ -1,5 +1,6 @@
 package stalkervr.library.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.data.domain.Page;
@@ -20,10 +21,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import stalkervr.library.entity.Publication;
+import stalkervr.library.exception.BadRequestException;
+import stalkervr.library.exception.NotFoundException;
 import stalkervr.library.service.PublicationService;
 
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/publications/")
 public class PublicationRestController {
@@ -45,13 +49,12 @@ public class PublicationRestController {
      */
     @SuppressWarnings("deprecation")
     @RequestMapping(value = "new/", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<Publication> addNewPublication(@RequestBody @Validated Optional<Publication> publication) {
+    public ResponseEntity<Publication> addNewPublication(@RequestBody @Validated Optional<Publication> publication)
+            throws BadRequestException {
+
         HttpHeaders httpHeaders = new HttpHeaders();
-        if(publication.isEmpty()){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        publication.get().setBookIssued(publication.get().getBookCount());
-        this.publicationService.addPublication(publication.get());
+        publication.orElseThrow().setBookIssued(publication.get().getBookCount());
+        this.publicationService.addPublication(publication.orElseThrow());
         return new ResponseEntity<>(publication.get(), httpHeaders, HttpStatus.CREATED);
     }
 
@@ -60,15 +63,12 @@ public class PublicationRestController {
      */
     @SuppressWarnings("deprecation")
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<Publication> getPublication(@RequestParam Optional<Long>  publicationId) {
+    public ResponseEntity<Publication> getPublication(@RequestParam Optional<Long>  publicationId)
+            throws NotFoundException, BadRequestException {
 
-        if(publicationId.isEmpty()){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
-        Optional<Publication> publication = publicationService.getPublicationById(publicationId.get());
-        return publication.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        Optional<Publication> publication =
+                Optional.ofNullable(publicationService.getPublicationById(publicationId.orElseThrow()));
+        return new ResponseEntity<>(publication.orElseThrow(), HttpStatus.OK);
     }
 
     /**
@@ -79,14 +79,13 @@ public class PublicationRestController {
      */
     @SuppressWarnings("deprecation")
     @RequestMapping(value = "all/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<Page<Publication>> getPublications(@RequestParam Optional<Integer> page, @RequestParam Optional<String> sortBy){
+    public ResponseEntity<Page<Publication>> getPublications(@RequestParam Optional<Integer> page, @RequestParam Optional<String> sortBy)
+            throws NotFoundException {
 
-        Page<Publication> publicationPage = publicationService.getAllPublicationSorted(
-                PageRequest.of(
-                page.orElse(0), 5,
-                Sort.Direction.ASC, sortBy.orElse("id")
-                )
-        );
+        Page<Publication> publicationPage =
+                publicationService.getAllPublicationSorted(
+                        PageRequest.of(page.orElse(0), 5,
+                                Sort.Direction.ASC, sortBy.orElse("id")));
         return new ResponseEntity<>(publicationPage, HttpStatus.OK);
     }
 
@@ -98,14 +97,11 @@ public class PublicationRestController {
     @RequestMapping(value = "all/search", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<Page<Publication>> searchByTextNew (
             @RequestParam Optional<Integer> page, @RequestParam Optional<String> searchText,
-            @RequestParam Optional<String> sortBy){
-
-        if(searchText.isEmpty() || searchText.get().equals("")){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+            @RequestParam Optional<String> sortBy)
+            throws BadRequestException {
 
         return new ResponseEntity<>(
-                publicationService.searchByText(page.orElse(0), searchText.orElse(""), sortBy.orElse("id")),
+                publicationService.searchByText(page.orElse(0), searchText.orElseThrow(), sortBy.orElse("id")),
                 HttpStatus.OK
         );
     }

@@ -41,12 +41,12 @@
 ## Работа с журналом выдачи публикаций
 
 #### просмотреть постранично все записи в журнале
-* http://localhost:8085/api/users/issuance/
-* http://localhost:8085/api/users/issuance/?page=0
+* http://localhost:8085/api/issuances/all/
+* http://localhost:8085/api/issuances/all/?page=0
 
 #### просмотреть все записи журнала по id пользователя
-* http://localhost:8085/api/users/issuanceall/?page=0&userId=1
-* http://localhost:8085/api/users/issuanceall/?userId=1
+* http://localhost:8085/api/issuances/user/?userId=1
+* http://localhost:8085/api/issuances/user/?page=0&userId=1
 
 #### выдать издание пользователю
 * http://localhost:8085/api/users/take-book/?userId=2&publicationId=4

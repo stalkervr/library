@@ -3,15 +3,12 @@ package stalkervr.library.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import stalkervr.library.entity.IssuanceLog;
-
-import java.util.List;
+import stalkervr.library.exception.BadRequestException;
+import stalkervr.library.exception.NotFoundException;
 
 public interface IssuanceLogService {
 
-    Page<IssuanceLog> getAllIssuance(PageRequest pageRequest);
+    Page<IssuanceLog> getAllIssuance(PageRequest pageRequest) throws NotFoundException;
 
-    List<IssuanceLog> getAllIssuanceByUserId(Long userId);
-
-    Page<IssuanceLog> getAllIssuanceByUserId(Integer page, Long userId);
-
+    Page<IssuanceLog> getAllIssuanceByUserId(Integer page, Long userId) throws NotFoundException, BadRequestException;
 }

@@ -1,9 +1,9 @@
 package stalkervr.library.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import org.springframework.http.HttpHeaders;
@@ -21,13 +21,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import stalkervr.library.entity.IssuanceLog;
 import stalkervr.library.entity.UserLibrary;
+import stalkervr.library.exception.BadRequestException;
+import stalkervr.library.exception.NotFoundException;
 import stalkervr.library.service.IssuanceLogService;
 import stalkervr.library.service.PublicationService;
 import stalkervr.library.service.UserLibraryService;
 
-import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/users/")
 public class UserRestController {
@@ -49,13 +52,13 @@ public class UserRestController {
      *     "id": 3
      * }
      */
+    @SuppressWarnings("deprecation")
     @RequestMapping(value = "new/", method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<UserLibrary> addNewUser(@RequestBody @Validated UserLibrary userLibrary){
+    public ResponseEntity<UserLibrary> addNewUser(@RequestBody @Validated UserLibrary userLibrary)
+            throws BadRequestException {
+
         HttpHeaders httpHeaders = new HttpHeaders();
-        if(userLibrary == null){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
         this.userLibraryService.addUser(userLibrary);
         return new ResponseEntity<>(userLibrary, httpHeaders, HttpStatus.OK);
     }
@@ -63,104 +66,48 @@ public class UserRestController {
     /**
      * http://localhost:8085/api/users/all/
      */
+    @SuppressWarnings("deprecation")
     @RequestMapping(value = "all/", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<Page<UserLibrary>> getAllUsers(@RequestParam Optional<Integer> page) {
+    public ResponseEntity<Page<UserLibrary>> getAllUsers(@RequestParam Optional<Integer> page)
+            throws NotFoundException {
 
-        Page<UserLibrary> userLibraryPage = userLibraryService.getAllUserPage(
-                PageRequest.of(
-                        page.orElse(0),5
-                )
-        );
-        return new ResponseEntity<>(userLibraryPage, HttpStatus.OK);
-    }
-
-    /**
-     * http://localhost:8085/api/users/issuance/
-     * http://localhost:8085/api/users/issuance/?page=0
-     */
-    @RequestMapping(value = "issuance/", method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<Page<IssuanceLog>> getAllIssuanceLog(@RequestParam Optional<Integer> page) {
-
-        return new ResponseEntity<>
-                (issuanceLogService.getAllIssuance(PageRequest.of(page.orElse(0),5)), HttpStatus.OK);
-    }
-
-    /**
-     * http://localhost:8085/api/users/issuanceall-page/?page=0&userId=1
-     * http://localhost:8085/api/users/issuanceall-page/?userId=1
-     */
-//    @RequestMapping(value = "issuanceall-page/", method = RequestMethod.GET,
-//            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-//    public ResponseEntity<Page<IssuanceLog>> getAllIssuanceLogByUserIdPage(
-//            @RequestParam Optional<Integer> page, @RequestParam Optional<Long> userId) {
-//
-//        if(userId.isEmpty()){
-//            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-//        }
-//
-//        return new ResponseEntity<>(
-//                issuanceLogService.getAllIssuanceByUserId(page.orElse(0),userId.get()),
-//                HttpStatus.OK
-//        );
-//    }
-
-    /**
-     * http://localhost:8085/api/users/issuanceall/?page=0&userId=1
-     * http://localhost:8085/api/users/issuanceall/?userId=1
-     */
-    @RequestMapping(value = "issuanceall/", method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<Page<IssuanceLog>> getAllIssuanceLogByUserId(
-            @RequestParam Optional<Integer> page, @RequestParam Optional<Long> userId) {
-
-        if(userId.isEmpty()){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
-        return new ResponseEntity<>(
-                issuanceLogService.getAllIssuanceByUserId(page.orElse(0),userId.get()),
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>(userLibraryService.getAllUserPage(
+                PageRequest.of(page.orElse(0),5)), HttpStatus.OK);
     }
 
     /**
      * http://localhost:8085/api/users/take-book/?userId=2&publicationId=4
      */
+    @SuppressWarnings("deprecation")
     @RequestMapping(value = "take-book/", method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<List<IssuanceLog>> takeBook(
-            @RequestParam Optional<Long> userId, @RequestParam Optional<Long> publicationId) {
+    public ResponseEntity<Page<IssuanceLog>> takeBook(@RequestParam Optional<Integer> page,
+            @RequestParam Optional<Long> userId, @RequestParam Optional<Long> publicationId)
+            throws NotFoundException, BadRequestException {
 
-        if(userId.isEmpty() || publicationId.isEmpty()){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+            userLibraryService.takeBook(
+                    (userLibraryService.getUserById(userId.orElseThrow())),
+                    (publicationService.getPublicationById(publicationId.orElseThrow())));
 
-        userLibraryService.takeBook(
-                (userLibraryService.getUserById(userId.get())).get(),
-                (publicationService.getPublicationById(publicationId.get())).get()
-        );
-
-        return new ResponseEntity<>( issuanceLogService.getAllIssuanceByUserId(userId.get()), HttpStatus.OK);
+            return new ResponseEntity<>( issuanceLogService
+                    .getAllIssuanceByUserId(page.orElse(0), userId.orElseThrow()), HttpStatus.OK);
     }
 
     /**
      * http://localhost:8085/api/users/return-book/?userId=2&publicationId=4
      */
+    @SuppressWarnings("deprecation")
     @RequestMapping(value = "return-book/", method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<List<IssuanceLog>> returnBook(
-            @RequestParam Optional<Long> userId, @RequestParam Optional<Long> publicationId){
+    public ResponseEntity<Page<IssuanceLog>> returnBook(@RequestParam Optional<Integer> page,
+            @RequestParam Optional<Long> userId, @RequestParam Optional<Long> publicationId)
+            throws NotFoundException, BadRequestException {
 
-        if(userId.isEmpty() || publicationId.isEmpty()){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
-        userLibraryService.returnBook(
-                (userLibraryService.getUserById(userId.get())).get(),
-                (publicationService.getPublicationById(publicationId.get())).get());
-
-        return new ResponseEntity<>(issuanceLogService.getAllIssuanceByUserId(userId.get()), HttpStatus.OK);
+            userLibraryService.returnBook(
+                    (userLibraryService.getUserById(userId.orElseThrow())),
+                    (publicationService.getPublicationById(publicationId.orElseThrow())));
+            return new ResponseEntity<>(issuanceLogService
+                    .getAllIssuanceByUserId(page.orElse(0), userId.get()), HttpStatus.OK);
     }
 }

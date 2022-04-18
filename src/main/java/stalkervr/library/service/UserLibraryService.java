@@ -2,24 +2,21 @@ package stalkervr.library.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import stalkervr.library.entity.IssuanceLog;
+
 import stalkervr.library.entity.Publication;
 import stalkervr.library.entity.UserLibrary;
-
-import java.util.List;
-import java.util.Optional;
+import stalkervr.library.exception.BadRequestException;
+import stalkervr.library.exception.NotFoundException;
 
 public interface UserLibraryService {
 
-    void addUser(UserLibrary userLibrary);
+    void addUser(UserLibrary userLibrary) throws BadRequestException;
 
-    Optional<UserLibrary> getUserById(Long id);
+    UserLibrary getUserById(Long id) throws NotFoundException, BadRequestException;
 
-    //List<UserLibrary> getAllUsers();
+    Page<UserLibrary> getAllUserPage(PageRequest pageRequest) throws NotFoundException;
 
-    Page<UserLibrary> getAllUserPage(PageRequest pageRequest);
+    void takeBook(UserLibrary user, Publication publication) throws BadRequestException, NotFoundException;
 
-    void takeBook(UserLibrary user, Publication publication);
-
-    void returnBook(UserLibrary user, Publication publication);
+    void returnBook(UserLibrary user, Publication publication) throws NotFoundException;
 }
